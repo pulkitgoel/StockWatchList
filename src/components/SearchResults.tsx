@@ -1,6 +1,7 @@
 interface Item {
   id: string;
   name: string;
+  scripcode: string;
   description: string;
 }
 
@@ -17,7 +18,7 @@ export function SearchResults({ results }: SearchResultsProps) {
       <div className="space-y-4">
         {results.map((item) => (
           <div
-            key={item.id}
+            key={item.scripcode}
             className="p-4 border border-gray-200 rounded-lg"
           >
             <h3 className="font-medium">{item.name}</h3>

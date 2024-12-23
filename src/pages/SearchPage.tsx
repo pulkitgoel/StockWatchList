@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { SearchInput } from '../components/SearchInput';
+import { SelectedStocks } from '../components/SelectedStocks';
 import { SearchSuggestions } from '../components/SearchSuggestions';
 import { fetchStockSuggestions, fetchStockData } from '../lib/api';
 import type { Stock } from '../lib/types';
@@ -7,10 +8,9 @@ import type { Stock } from '../lib/types';
 export function SearchPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [suggestions, setSuggestions] = useState<Stock[]>([]);
-  const [selectedStock, setSelectedStock] = useState<Stock | null>(null);
+  const [selectedStocks, setSelectedStocks] = useState<Stock[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Handle dynamic search
   useEffect(() => {
     const handleSearch = async () => {
       if (searchTerm.trim().length < 2) {
@@ -28,27 +28,24 @@ export function SearchPage() {
         console.error('Error fetching suggestions:', error);
         setSuggestions([]);
       }
-    };    // Debounce the search (300ms delay)
+    };
+
     const timer = setTimeout(handleSearch, 300);
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  // Handle selection of a stock
-  const handleStockSelect = async (stock: Stock) => {
-    setSearchTerm(stock.stockname); // Set stock name in textbox
+  const handleStockSelect = (stock: Stock) => {
+    setSearchTerm(''); // Clear search term
     setSuggestions([]); // Hide suggestions
-    setIsLoading(true);
-
-    const { data, error } = await fetchStockData(stock._id); // Fetch full stock details
-    setIsLoading(false);
-
-    if (data) {
-      setSelectedStock(data as Stock);
-    } else if (error) {
-      console.error('Error fetching stock data:', error);
-    }
+    setSelectedStocks((prevSelectedStocks) => [...prevSelectedStocks, stock]);
   };
-  
+
+  const handleStockRemove = (stockId: string) => {
+    setSelectedStocks((prevSelectedStocks) =>
+      prevSelectedStocks.filter((stock) => stock.scripcode !== stockId)
+    );
+  };
+
   return (
     <div className="p-6">
       <div className="max-w-xl mx-auto">
@@ -63,11 +60,11 @@ export function SearchPage() {
             onSelect={handleStockSelect}
           />
         )}
-        {selectedStock && (
-          <div className="mt-4 p-4 border rounded-lg bg-gray-100">
-            <h2 className="text-lg font-bold">{selectedStock.stockname}</h2>
-            <p>Details: {JSON.stringify(selectedStock)}</p>
-          </div>
+        {selectedStocks.length > 0 && (
+          <SelectedStocks
+            stocks={selectedStocks}
+            onRemove={handleStockRemove}
+          />
         )}
       </div>
     </div>

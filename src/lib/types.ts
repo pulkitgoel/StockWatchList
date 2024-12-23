@@ -8,6 +8,7 @@ export interface Item {
 export interface Stock {
   _id: string;
   stockname: string;
+  scripcode: string;
   [key: string]: any; // For additional stock properties
 }
 
