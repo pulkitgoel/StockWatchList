@@ -16,3 +16,8 @@ export interface SearchResult {
   data: Stock[] | Stock | null;
   error: Error | null;
 }
+
+export interface stockwatchlist{
+  user_id: string;
+  stocks: Stock[];
+}

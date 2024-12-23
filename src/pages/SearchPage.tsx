@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { SearchInput } from '../components/SearchInput';
 import { SelectedStocks } from '../components/SelectedStocks';
 import { SearchSuggestions } from '../components/SearchSuggestions';
-import { fetchStockSuggestions, fetchStockData } from '../lib/api';
+import { fetchStockSuggestions, saveSelectedStocks } from '../lib/api';
 import type { Stock } from '../lib/types';
 
 export function SearchPage() {
@@ -10,6 +10,7 @@ export function SearchPage() {
   const [suggestions, setSuggestions] = useState<Stock[]>([]);
   const [selectedStocks, setSelectedStocks] = useState<Stock[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
     const handleSearch = async () => {
@@ -46,6 +47,22 @@ export function SearchPage() {
     );
   };
 
+  const handleUpdateWishlist = async () => {
+    setIsUpdating(true);
+    try {
+      const response = await saveSelectedStocks(selectedStocks);
+      if (response.error) {
+        console.error('Error saving wishlist:', response.error);
+      } else {
+        console.log('Wishlist updated successfully');
+      }
+    } catch (error) {
+      console.error('Error updating wishlist:', error);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   return (
     <div className="p-6">
       <div className="max-w-xl mx-auto">
@@ -66,6 +83,17 @@ export function SearchPage() {
             onRemove={handleStockRemove}
           />
         )}
+        <button
+          onClick={handleUpdateWishlist}
+          className={`mt-4 px-4 py-2 rounded-lg ${
+            selectedStocks.length === 0 || isUpdating
+              ? 'bg-gray-400 text-gray-700 cursor-not-allowed'
+              : 'bg-blue-500 text-white'
+          }`}
+          disabled={selectedStocks.length === 0}
+        >
+          {isUpdating ? 'Updating...' : 'Update Wishlist'}
+        </button>
       </div>
     </div>
   );
